@@ -22,6 +22,10 @@ class HashTable:
 
     def __init__(self, capacity):
         # Your code here
+        self.capacity = capacity
+        if capacity < 8:
+            capacity = MIN_CAPACITY
+        self.arr = [None] * capacity
 
 
     def get_num_slots(self):
@@ -63,6 +67,10 @@ class HashTable:
         Implement this, and/or FNV-1.
         """
         # Your code here
+        hash = 5381
+        for c in key:
+            hash = ((hash << 5) + hash) + ord(c)
+        return hash
 
 
     def hash_index(self, key):
@@ -82,6 +90,11 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        index = self.hash_index(key)
+
+        self.arr[index] = value
+
+
 
 
     def delete(self, key):
@@ -93,6 +106,10 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        try:
+            self.arr[self.hash_index(key)] = None
+        except:
+            print('Key value not found. Please try with another value.')
 
 
     def get(self, key):
@@ -104,6 +121,14 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        if self.arr[self.hash_index(key)]:
+            return self.arr[self.hash_index(key)]
+        else:
+            return None
+        # try:
+        #     return self.arr[self.hash_index(key)]
+        # except:
+        #     return None
 
 
     def resize(self, new_capacity):
