@@ -23,6 +23,7 @@ class HashTable:
     def __init__(self, capacity):
         # Your code here
         self.capacity = capacity
+        self.size = 0
         if capacity < 8:
             capacity = MIN_CAPACITY
         self.arr = [None] * capacity
@@ -39,6 +40,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        return self.capacity
 
 
     def get_load_factor(self):
@@ -48,6 +50,18 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        load_factor = float(self.size) / float(get_num_slots())
+
+        if load_factor > 0.7:
+            new_capacity = self.capacity * 2
+            resize(new_capacity)
+        elif load_factor < 0.2:
+            if (self.capacity / 2) < MIN_CAPACITY:
+                new_capacity = MIN_CAPACITY
+            else:
+                new_capacity = self.capacity / 2
+            resize(new_capacity)
+
 
 
     def fnv1(self, key):
@@ -81,6 +95,8 @@ class HashTable:
         #return self.fnv1(key) % self.capacity
         return self.djb2(key) % self.capacity
 
+        
+
     def put(self, key, value):
         """
         Store the value with the given key.
@@ -90,10 +106,29 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        self.size += 1
+
         index = self.hash_index(key)
 
-        self.arr[index] = value
+        node = self.arr[index]
+        node_entry = HashTableEntry(key, value)
 
+        # array spot is empty
+        if node is None:
+            self.arr[index] = node_entry
+            return
+
+        # check for value in LL
+        prev = node
+        while node is not None:
+            if node.key == key:
+                node.value = value
+                return
+            prev = node
+            node = node.next
+        
+        node_entry.next = self.arr[index]
+        self.arr[index] = node_entry
 
 
 
@@ -106,8 +141,28 @@ class HashTable:
         Implement this.
         """
         # Your code here
+
+        index = self.hash_index(key)
+        node = self.arr[index]
+
+        # head node is the value scenario
+        if node.key == key:
+            self.size -= 1
+            self.arr[index] = node.next
+            return node
+
+        prev = node
+        node = node.next
         try:
-            self.arr[self.hash_index(key)] = None
+            while node is not None:
+                if node.key == key:
+                    self.size -= 1
+                    prev.next = node.next
+                    node.next = None
+                    return node
+                else:
+                    prev = node
+                    node = node.next
         except:
             print('Key value not found. Please try with another value.')
 
@@ -117,18 +172,21 @@ class HashTable:
         Retrieve the value stored with the given key.
 
         Returns None if the key is not found.
-
+    
         Implement this.
         """
-        # Your code here
-        if self.arr[self.hash_index(key)]:
-            return self.arr[self.hash_index(key)]
-        else:
+
+        index = self.hash_index(key)
+        node = self.arr[index]
+
+        try:
+            while node is not None:
+                if node.key == key:
+                    return node.value
+                node = node.next
+
+        except:
             return None
-        # try:
-        #     return self.arr[self.hash_index(key)]
-        # except:
-        #     return None
 
 
     def resize(self, new_capacity):
@@ -139,6 +197,21 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        self.capacity = new_capacity
+
+        old_table = self.arr[:]
+        self.arr = [None] * new_capacity
+
+
+        for i in range(len(old_table)):
+            node = old_table[i]
+            while node is not None:
+                self.put(node.key, node.value)
+                node = node.next
+
+
+
+
 
 
 
